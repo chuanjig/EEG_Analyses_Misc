@@ -309,18 +309,55 @@ else
     load erp_data_a_new
 end
 
+%% ================== doing regression =====================
 disp('...now all of the order of the features are matched with ERP data')
 disp('...now we could begin to do the regression on the ERP data');
 
+disp('...regressing out saturation for unimodal video')
+disp('...then check out the results')
 
-
-
-
-
-
-
-
-
+% 1 - hue; 2 - saturation; 3 - value; 4 - motion1; 5 - motion2; 6 - motion3; 7 - motion4; 8 - motion5; 9 - motion6; 10 - motion7; 11 - pitch; 12 - tempo; 13 - mode.
+% 1 - hue; 2 - saturation; 3 - value; 4 - motion1; 5 - motion2; 6 - motion3; 7 - motion4; 8 - motion5; 9 - motion6; 10 - motion7;
+% 1 - pitch; 2 - tempo; 3 - mode.
+if ~exist('erp_data_v_final.mat')
+    ni = [];
+    for ni = 1:size(erp_data_v_new,2) % ni = 2
+        erp_data_v_ing = [];
+        features_v_ing = [];
+        
+        erp_data_v_ing = erp_data_v_new{1,ni};
+        erp_data_v_ing = reshape(erp_data_v_ing, [size(erp_data_v_ing,1)*size(erp_data_v_ing,2), size(erp_data_v_ing,3)]);
+        erp_data_v_ing = erp_data_v_ing';
+        disp('...choosing the feature to be regressed, saturation')
+        features_v_ing = features_v_ordered(1:size(erp_data_v_ing,1),2,ni);
+        
+        disp('...normalize before regression')
+        ifeatures_v_ing = [];
+        regmat = [];
+        for ifeatures_v_ing = 1:length(features_v_ing)
+            regmat(ifeatures_v_ing) = log10(features_v_ing(ifeatures_v_ing));
+        end
+        regmat=regmat';
+        resid = [];
+        regmat(:,end+1)=1; % add the additional column here.
+        disp('...doing regression')
+        for j=1:size(erp_data_v_ing,2)
+            [B1,BINT1,R1] = regress(erp_data_v_ing(:,j),regmat);
+            resid(:,j)=R1;
+        end
+        resid=resid';
+        disp('...assigning new values')
+        erp_data_v_new{1,ni} = reshape(resid, [size(erp_data_v_new{1,ni},1) size(erp_data_v_new{1,ni},2) size(erp_data_v_new{1,ni},3)]);
+        disp(['subj ' num2str(ni) ' is done'])
+    end
+    disp('...saving data')
+    erp_data_v_final = erp_data_v_new;
+    save erp_data_v_final erp_data_v_final
+    disp('...regressing out saturation is done')
+else
+    disp('...file exists, load the file')
+    load erp_data_v_final   
+end
 
 
 
