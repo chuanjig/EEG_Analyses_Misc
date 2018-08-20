@@ -222,23 +222,104 @@ end
 %% ================== match the features with erp data =====================
 addr='F:\UPDATE\P_1_MIA\3_MIA_ERP\8_Paper\1_ERPs_paper\Submission\BiologicalPsychology\ResponseStimuliFeatures';
 cd(addr);
-
+features_av_ordered = NaN(268,13,22);
 if ~exist('features_av_ordered.mat')
     
-    for ni = 1:size(stimuli_label_av,2)
+    for ni = 1:size(stimuli_label_av,2) % ni = 22
         i=1;
-        parfor i=1:size(erp_data_av{1,ni},3) % trials
+        for i=1:size(erp_data_av{1,ni},3) % trials
             ind=[];
-            ind = find(strcmp(stimuli_label_av{i,1},labels_avOrder));
-            disp('...getting the ordered features of audiovisual trials')
-            features_av_ordered(i,ni) = features_av(ind,:);
+            ind = find(strcmp(stimuli_label_av{i,ni},labels_avOrder));
+            features_av_ordered(i,:,ni) = features_av(ind,:);
         end
+        disp('...getting the ordered features of audiovisual trials')
+        disp(['...participant ' num2str(ni) ' is done'])
     end
-    load features_av_ordered features_av_ordered
+    save features_av_ordered features_av_ordered
 else
     disp('...file exists, load the file')
     load features_av_ordered  
 end
+
+features_v_ordered = NaN(54,10,22);
+if ~exist('features_v_ordered.mat')
+    
+    for ni = 1:size(stimuli_label_v,2) % ni = 22
+        i=1;
+        for i=1:size(erp_data_v{1,ni},3) % trials
+            ind=[];
+            ind = find(strcmp(stimuli_label_v{i,ni},labels_vOrder));
+            features_v_ordered(i,:,ni) = features_v(ind,:);
+        end
+        disp('...getting the ordered features of audiovisual trials')
+        disp(['...participant ' num2str(ni) ' is done'])
+    end
+    save features_v_ordered features_v_ordered
+else
+    disp('...file exists, load the file')
+    load features_v_ordered  
+end
+
+features_a_ordered = NaN(53,3,22);
+if ~exist('features_a_ordered.mat')
+    
+    for ni = 1:size(stimuli_label_a,2) % ni = 22
+        i=1;
+        for i=1:size(erp_data_a{1,ni},3) % trials
+            ind=[];
+            ind = find(strcmp(stimuli_label_a{i,ni},labels_aOrder));
+            features_a_ordered(i,:,ni) = features_a(ind,:);
+        end
+        disp('...getting the ordered features of audiovisual trials')
+        disp(['...participant ' num2str(ni) ' is done'])
+    end
+    save features_a_ordered features_a_ordered
+else
+    disp('...file exists, load the file')
+    load features_a_ordered  
+end
+
+disp('...now deleting some electrodes that we do not need')
+
+if ~exist('erp_data_av_new.mat')
+    for ni = 1:size(erp_data_av,2) % number of participants
+        disp('...doing it for the audiovisual trials')
+        temp=erp_data_av{1,ni};
+        temp([33 43 65 66 67 68],:,:)=[];
+        erp_data_av_new{1,ni}=temp;
+        clear temp
+        disp('...doing it for the visual only trials')
+        temp=erp_data_v{1,ni};
+        temp([33 43 65 66 67 68],:,:)=[];
+        erp_data_v_new{1,ni}=temp;
+        clear temp
+        disp('...doing it for the auditory only trials')
+        temp=erp_data_a{1,ni};
+        temp([33 43 65 66 67 68],:,:)=[];
+        erp_data_a_new{1,ni}=temp;
+        clear temp
+    end
+    save erp_data_av_new erp_data_av_new
+    save erp_data_v_new erp_data_v_new
+    save erp_data_a_new erp_data_a_new
+else
+    disp('...file exists, load the file')
+    load erp_data_av_new
+    load erp_data_v_new
+    load erp_data_a_new
+end
+
+disp('...now all of the order of the features are matched with ERP data')
+disp('...now we could begin to do the regression on the ERP data');
+
+
+
+
+
+
+
+
+
 
 
 
