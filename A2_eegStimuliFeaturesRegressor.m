@@ -345,7 +345,7 @@ if ~exist('erp_data_v_final.mat')
         regmat(:,end+1)=1; % add the additional column here.
         disp('...doing regression')
         for j=1:size(erp_data_v_ing,2)
-            [B1,BINT1,R1] = regress(erp_data_v_ing(:,j),regmat);
+            [~,BINT1,R1] = regress(erp_data_v_ing(:,j),regmat);
             resid(:,j)=R1;
         end
         resid=resid';
@@ -593,3 +593,155 @@ addr='F:\UPDATE\P_1_MIA\3_MIA_ERP\8_Paper\1_ERPs_paper\Submission\BiologicalPsyc
 cd(addr);
 save unimodalV_RegressionFinal unimodalV_RegressionFinal
 
+disp('==================================================================')
+disp('==================================================================')
+disp('...get ready for ANOVA for unimodal auditory stimuli')
+
+addr='F:\UPDATE\P_1_MIA\3_MIA_ERP\8_Paper\1_ERPs_paper\Submission\BiologicalPsychology\ResponseStimuliFeatures';
+cd(addr);
+load erp_data_a_final
+
+disp('...get indices for each condition')
+ni = [];
+MPTrial=[];
+MXTrial=[];
+MNTrial=[];
+for ni = 1:size(erp_data_a_final,2) % ni = 2
+    erp_data_a_final_ing = [];
+    erp_data_a_final_ing = erp_data_a_final{1,ni};
+    iTrial = [];
+    for iTrial = 1:size(erp_data_a_final{1,ni},3) % iTrial = 2
+        if strcmp(stimuli_label_a{iTrial,ni}(1:2),'MP')
+            MPTrial(iTrial,ni) = iTrial;
+        elseif strcmp(stimuli_label_a{iTrial,ni}(1:2),'MX')
+            MXTrial(iTrial,ni) = iTrial;
+        elseif strcmp(stimuli_label_a{iTrial,ni}(1:2),'MN')
+            MNTrial(iTrial,ni) = iTrial;
+        else
+            disp('...not a trial')
+        end
+    end
+end
+
+disp('now got the indices for each condition')
+disp('now start to get the mean amplitudes')
+erp_data_MP=[];
+erp_data_MX=[];
+erp_data_MN=[];
+for ni = 1:size(erp_data_a_final,2) % ni = 2
+    erp_data_a_final_ing = [];
+    erp_data_a_final_ing = erp_data_a_final{1,ni};
+    disp('deleting 0s in a index vector')
+    MPTrialTemp = [];
+    MPTrialTemp = MPTrial(:,ni);
+    MPTrialTemp(MPTrialTemp==0) = [];
+    
+    MXTrialTemp = [];
+    MXTrialTemp = MXTrial(:,ni);
+    MXTrialTemp(MXTrialTemp==0) = [];
+
+    MNTrialTemp = [];
+    MNTrialTemp = MNTrial(:,ni);
+    MNTrialTemp(MNTrialTemp==0) = [];
+    
+    disp('get the mean amplitudes for condition')
+    erp_data_MP{1,ni} = mean(erp_data_a_final_ing(:,:,MPTrialTemp),3);
+    erp_data_MX{1,ni} = mean(erp_data_a_final_ing(:,:,MXTrialTemp),3);
+    erp_data_MN{1,ni} = mean(erp_data_a_final_ing(:,:,MNTrialTemp),3);
+end
+
+% anterior: F5,F3,F1,FZ,F2,F4,F6; FC5,FC3,FC1,FCZ,FC2,FC4,FC6
+% posterior: C5,C3,C1,CZ,C2,C4,C6; CP5,CP3,CP1,CPZ,CP2,CP4,CP6;P5,P3,P1,PZ,P2,P4,P6;PO5,PO3,POZ,PO4,PO6
+% ---------- get the 100 to 200ms time window (150points to 200points) data. N150.
+% ---------- get the 200 to 300ms time window (200points to 250points) data. P250.
+% ---------- get the 500 to 900ms time window (350points to 550points) data. LPP.
+TimeWindow1 = 150:200; 
+TimeWindow2 = 200:250; 
+TimeWindow3 = 350:550; 
+anteriorInd = [7:13 16:22];
+posteriorInd = [25:31 34:40 43:49 52:56];
+
+disp('...processing N150')
+N150_ANT_VP = [];
+N150_POS_VP = [];
+N150_ANT_VX = [];
+N150_POS_VX = [];
+N150_ANT_VN = [];
+N150_POS_VN = [];
+
+for ni = 1:size(erp_data_a_final,2) % ni = 2
+    erp_data_MP_temp = [];
+    erp_data_MP_temp = erp_data_MP{1,ni};
+    erp_data_MX_temp = [];
+    erp_data_MX_temp = erp_data_MX{1,ni};    
+    erp_data_MN_temp = [];
+    erp_data_MN_temp = erp_data_MN{1,ni};
+    
+    N150_ANT_MP(ni) = mean2(erp_data_MP_temp(anteriorInd,TimeWindow1));
+    N150_POS_MP(ni) = mean2(erp_data_MP_temp(posteriorInd,TimeWindow1));
+    N150_ANT_MX(ni) = mean2(erp_data_MX_temp(anteriorInd,TimeWindow1));
+    N150_POS_MX(ni) = mean2(erp_data_MX_temp(posteriorInd,TimeWindow1));
+    N150_ANT_MN(ni) = mean2(erp_data_MN_temp(anteriorInd,TimeWindow1));
+    N150_POS_MN(ni) = mean2(erp_data_MN_temp(posteriorInd,TimeWindow1));    
+  
+end
+
+disp('...processing P250')
+P250_ANT_MP = [];
+P250_POS_MP = [];
+P250_ANT_MX = [];
+P250_POS_MX = [];
+P250_ANT_MN = [];
+P250_POS_MN = [];
+
+for ni = 1:size(erp_data_a_final,2) % ni = 2
+    erp_data_MP_temp = [];
+    erp_data_MP_temp = erp_data_MP{1,ni};
+    erp_data_MX_temp = [];
+    erp_data_MX_temp = erp_data_MX{1,ni};    
+    erp_data_MN_temp = [];
+    erp_data_MN_temp = erp_data_MN{1,ni};
+    
+    P250_ANT_MP(ni) = mean2(erp_data_MP_temp(anteriorInd,TimeWindow2));
+    P250_POS_MP(ni) = mean2(erp_data_MP_temp(posteriorInd,TimeWindow2));
+    P250_ANT_MX(ni) = mean2(erp_data_MX_temp(anteriorInd,TimeWindow2));
+    P250_POS_MX(ni) = mean2(erp_data_MX_temp(posteriorInd,TimeWindow2));
+    P250_ANT_MN(ni) = mean2(erp_data_MN_temp(anteriorInd,TimeWindow2));
+    P250_POS_MN(ni) = mean2(erp_data_MN_temp(posteriorInd,TimeWindow2));    
+  
+end
+
+disp('...processing LPP')
+LPP_ANT_MP = [];
+LPP_POS_MP = [];
+LPP_ANT_MX = [];
+LPP_POS_MX = [];
+LPP_ANT_MN = [];
+LPP_POS_MN = [];
+
+for ni = 1:size(erp_data_a_final,2) % ni = 2
+    erp_data_MP_temp = [];
+    erp_data_MP_temp = erp_data_MP{1,ni};
+    erp_data_MX_temp = [];
+    erp_data_MX_temp = erp_data_MX{1,ni};    
+    erp_data_MN_temp = [];
+    erp_data_MN_temp = erp_data_MN{1,ni};
+    
+    LPP_ANT_MP(ni) = mean2(erp_data_MP_temp(anteriorInd,TimeWindow3));
+    LPP_POS_MP(ni) = mean2(erp_data_MP_temp(posteriorInd,TimeWindow3));
+    LPP_ANT_MX(ni) = mean2(erp_data_MX_temp(anteriorInd,TimeWindow3));
+    LPP_POS_MX(ni) = mean2(erp_data_MX_temp(posteriorInd,TimeWindow3));
+    LPP_ANT_MN(ni) = mean2(erp_data_MN_temp(anteriorInd,TimeWindow3));
+    LPP_POS_MN(ni) = mean2(erp_data_MN_temp(posteriorInd,TimeWindow3));    
+  
+end
+
+disp('...get the data matrix of MP ready')
+N150 = [N150_ANT_MP' N150_POS_MP' N150_ANT_MX' N150_POS_MX' N150_ANT_MN' N150_POS_MN'];
+P250 = [P250_ANT_MP' P250_POS_MP' P250_ANT_MX' P250_POS_MX' P250_ANT_MN' P250_POS_MN'];
+LPP = [LPP_ANT_MP' LPP_POS_MP' LPP_ANT_MX' LPP_POS_MX' LPP_ANT_MN' LPP_POS_MN'];
+
+unimodalA_RegressionFinal = [N150 P250 LPP];
+addr='F:\UPDATE\P_1_MIA\3_MIA_ERP\8_Paper\1_ERPs_paper\Submission\BiologicalPsychology\ResponseStimuliFeatures';
+cd(addr);
+save unimodalA_RegressionFinal unimodalA_RegressionFinal
